@@ -42,7 +42,7 @@ setkey(DT, interval)  # to make a later merge easier
 ```
 
 
-The structure of the dataframe is verified:
+The structure of the datatable is verified:
 
 
 ```r
@@ -277,9 +277,12 @@ The effect of imputing a value for all missing observations of steps has shifted
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
+First, a new datatable is created with a new column, `weekday`, that is a factor variable with two levels: `weekday` and `weekend` depending on whether that particular day is a Saturday or Sunday (weekend) or not (weekday),
 
 
 ```r
+## Use lubridate wday() to check if the date is a Sun or Sat, wday == 1 or 7
+## respectively
 mDT[, `:=`(weekday, (wday(date) > 1 & wday(date) < 7))]
 ```
 
@@ -301,8 +304,9 @@ mDT[, `:=`(weekday, (wday(date) > 1 & wday(date) < 7))]
 ```r
 mDT$weekday[mDT$weekday == TRUE] <- "weekday"
 mDT$weekday[mDT$weekday == FALSE] <- "weekend"
+# Convert column to factor
 mDT$weekday <- as.factor(mDT$weekday)
-str(mDT)
+str(mDT)  # check structure to see if all OK
 ```
 
 ```
@@ -317,6 +321,7 @@ str(mDT)
 ```
 
 
+Next, extract a further datatable which has the mean number of steps calculated by interval number and by weekday factor.
 
 ```r
 mDT_mean_steps <- mDT[, mean(steps), by = c("weekday", "interval")]
@@ -324,11 +329,12 @@ setnames(mDT_mean_steps, c("weekday", "interval", "steps"))
 ```
 
 
+Finally, create a figure with two panels, one for weekday and one for weekends.
 
 
 ```r
 p <- ggplot(mDT_mean_steps, aes(x = interval, y = steps), )
-p <- p + geom_line() + facet_grid(weekday ~ .)
+p <- p + geom_line(colour = "steelblue") + facet_grid(weekday ~ .)
 p <- p + xlab("Interval") + ylab("Number of steps")
 p
 ```
@@ -336,3 +342,4 @@ p
 ![plot of chunk panel_plot](figure/panel_plot.png) 
 
 
+Over the weekend, activity is more evenly extended during the day, while on weekdays this individual is mostly active in the early part of the day. This would be consistent with diminished numbers of steps during working hours and more exercise before work and over weekends.
